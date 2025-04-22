@@ -31,6 +31,7 @@ raccolta_munizioni = pygame.mixer.Sound("suoni/pistol-cock-6014.mp3")
 suono_zombie_colpito = pygame.mixer.Sound("suoni/zombie-6851.mp3")
 musica_fondo = pygame.mixer.Sound("suoni/fx-braam-subdown-with-intense-drop-with-distortion-and-reverb-162383.mp3")
 
+
 # Colori
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -46,6 +47,7 @@ life_player = 3
 # Spawn proiettili
 grandezza_proiettili = 10
 proiettili = 10
+
 
 timer_proiettili = 1000
 posizione_proiettile = None  # Per disegnare il proiettile spawnato
@@ -193,7 +195,6 @@ def raccogli_proiettili():
 def pausa_gioco():
     global running, life_player, tempo_paused, start_time
     pausa_inizio = pygame.time.get_ticks()
-    mouse_pos = pygame.mouse.get_pos()
     pause = True
     spessore = 3
 
@@ -210,6 +211,8 @@ def pausa_gioco():
 
     while pause:
 
+
+        mouse_pos = pygame.mouse.get_pos()
 
         if(life_player > 0):
             # Rettangolo 1
