@@ -15,21 +15,7 @@ start_time = pygame.time.get_ticks()
 tempo_paused = pygame.time.get_ticks() - start_time
 tempo_paused = 0
 
-#immagini
-prato_image = pygame.transform.scale(
-    pygame.image.load("images/prato.png").convert_alpha(),
-    (WIDTH, HEIGHT)
-)
-proiettili_image = pygame.transform.scale(
-    pygame.image.load("images/proiettili.png").convert_alpha(),
-    (50, 50)
-)
 
-# Suoni
-suono_proiettile = pygame.mixer.Sound("suoni/bulletshot-impact-sound-effect-230462.mp3")
-raccolta_munizioni = pygame.mixer.Sound("suoni/pistol-cock-6014.mp3")
-suono_zombie_colpito = pygame.mixer.Sound("suoni/zombie-6851.mp3")
-musica_fondo = pygame.mixer.Sound("suoni/fx-braam-subdown-with-intense-drop-with-distortion-and-reverb-162383.mp3")
 
 
 # Colori
@@ -39,10 +25,11 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 # Giocatore
-player_size = 40
+player_size = 70
 player_pos = [WIDTH // 2, HEIGHT // 2]
 player_speed = 5
 life_player = 3
+left_right = False
 
 # Spawn proiettili
 grandezza_proiettili = 10
@@ -53,9 +40,17 @@ timer_proiettili = 1000
 posizione_proiettile = None  # Per disegnare il proiettile spawnato
 
 # Zombie
-zombie_size = 40
+zombie_size = 70
 zombie_pos = [100, 100]
 zombie_speed = 2
+
+
+# Ottieni il valore di pi greco
+pi = math.pi
+
+# Esempio di utilizzo
+print(pi)
+
 
 # Proiettili sparati
 bullets = []
@@ -65,17 +60,57 @@ bullet_radius = 5
 # Font
 font = pygame.font.SysFont("Arial", 30)
 
+#immagini
+prato_image = pygame.transform.scale(
+    pygame.image.load("images/prato.png").convert_alpha(),
+    (WIDTH, HEIGHT)
+)
+proiettili_image = pygame.transform.scale(
+    pygame.image.load("images/proiettili.png").convert_alpha(),
+    (80, 80)
+)
+p_right = pygame.transform.scale(
+    pygame.image.load("images/p_right.png").convert_alpha(),
+    (player_size, player_size)
+)
+p_left = pygame.transform.scale(
+    pygame.image.load("images/p_left.png").convert_alpha(),
+    (player_size, player_size)
+)
+zombie_right = pygame.transform.scale(
+    pygame.image.load("images/zombie_right.png").convert_alpha(),
+    (zombie_size, zombie_size)
+)
+zombie_left = pygame.transform.scale(
+    pygame.image.load("images/zombie_left.png").convert_alpha(),
+    (zombie_size, zombie_size)
+)
+
+# Suoni
+suono_proiettile = pygame.mixer.Sound("suoni/bulletshot-impact-sound-effect-230462.mp3")
+raccolta_munizioni = pygame.mixer.Sound("suoni/pistol-cock-6014.mp3")
+suono_zombie_colpito = pygame.mixer.Sound("suoni/zombie-6851.mp3")
+musica_fondo = pygame.mixer.Sound("suoni/fx-braam-subdown-with-intense-drop-with-distortion-and-reverb-162383.mp3")
+
 
 
 # Disegna tutto
 def draw_window():
+    global zombie_pos
     win.fill((30, 30, 30))
     x = (WIDTH - prato_image.get_width()) // 2
     y = (HEIGHT - prato_image.get_height()) // 2
     win.blit(prato_image, (x, y))
-    pygame.draw.rect(win, GREEN, (*player_pos, player_size, player_size))
-    pygame.draw.rect(win, RED, (*zombie_pos, zombie_size, zombie_size))
+    if left_right:
+        win.blit(p_right, (player_pos))
+    else:
+        win.blit(p_left, (player_pos))
 
+    if calcolo_angolo_zombie() >= (pi // 2) and calcolo_angolo_zombie() <= pi:
+        win.blit(zombie_left, (zombie_pos))
+
+    else:
+        win.blit(zombie_right, (zombie_pos))
     # Carica la musica di sottofondo
     #musica_fondo.play()
 
@@ -100,9 +135,6 @@ def draw_window():
     win.blit(lives_text, (10, HEIGHT - lives_text.get_height() - 10))
 
 
-
-
-
 def calcolo_angolo_zombie():
     dx = player_pos[0] + player_size // 2 - (zombie_pos[0] + zombie_size // 2)
     dy = player_pos[1] + player_size // 2 - (zombie_pos[1] + zombie_size // 2)
@@ -122,6 +154,7 @@ def move_zombie():
 
 # Sparo con angolo verso il mouse
 def shoot_bullet(target_x, target_y):
+    suono_proiettile.play()
     dx = target_x - (player_pos[0] + player_size // 2)
     dy = target_y - (player_pos[1] + player_size // 2)
     angle = math.atan2(dy, dx)
@@ -133,7 +166,7 @@ def shoot_bullet(target_x, target_y):
         dir_x,
         dir_y
     ])
-    suono_proiettile.play()
+
 
 # Spawn di proiettili in posizione casuale
 def spawn_proiettili():
@@ -150,9 +183,11 @@ def update_bullets():
         b[0] += b[2] * bullet_speed
         b[1] += b[3] * bullet_speed
 
+        #Verifico che lo zombie venga colpito
         if zombie_pos[0] < b[0] < zombie_pos[0] + zombie_size and zombie_pos[1] < b[1] < zombie_pos[1] + zombie_size:
-            zombie_pos = [random.randint(0, WIDTH // 2- zombie_size), random.randint(0, HEIGHT // 2 - zombie_size)]
             suono_zombie_colpito.play()
+            zombie_pos = [random.randint(0, WIDTH // 2- zombie_size), random.randint(0, HEIGHT // 2 - zombie_size)]
+
         else:
             new_bullets.append(b)
     bullets = new_bullets
@@ -347,9 +382,11 @@ while running:
     if keys[pygame.K_a]:
         player_pos[0] -= player_speed
         timer_proiettili -= 1
+        left_right = False
     if keys[pygame.K_d]:
         player_pos[0] += player_speed
         timer_proiettili -= 1
+        left_right = True
     if keys[pygame.K_ESCAPE]:
         pausa_gioco()
 
