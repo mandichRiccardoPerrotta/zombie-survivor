@@ -12,10 +12,8 @@ pygame.display.set_caption("Zombie Survivor")
 clock = pygame.time.Clock()
 pygame.mixer.init()
 start_time = pygame.time.get_ticks()
-
-
-
-
+tempo_paused = pygame.time.get_ticks() - start_time
+tempo_paused = 0
 
 #immagini
 prato_image = pygame.transform.scale(
@@ -27,13 +25,11 @@ proiettili_image = pygame.transform.scale(
     (50, 50)
 )
 
-
 # Suoni
 suono_proiettile = pygame.mixer.Sound("suoni/bulletshot-impact-sound-effect-230462.mp3")
 raccolta_munizioni = pygame.mixer.Sound("suoni/pistol-cock-6014.mp3")
 suono_zombie_colpito = pygame.mixer.Sound("suoni/zombie-6851.mp3")
 musica_fondo = pygame.mixer.Sound("suoni/fx-braam-subdown-with-intense-drop-with-distortion-and-reverb-162383.mp3")
-
 
 # Colori
 WHITE = (255, 255, 255)
@@ -50,7 +46,6 @@ life_player = 3
 # Spawn proiettili
 grandezza_proiettili = 10
 proiettili = 10
-
 
 timer_proiettili = 1000
 posizione_proiettile = None  # Per disegnare il proiettile spawnato
@@ -196,6 +191,9 @@ def raccogli_proiettili():
             posizione_proiettile = None
 
 def pausa_gioco():
+    global running, life_player, tempo_paused, start_time
+    pausa_inizio = pygame.time.get_ticks()
+    mouse_pos = pygame.mouse.get_pos()
     pause = True
     spessore = 3
 
@@ -211,8 +209,7 @@ def pausa_gioco():
     color3 = [230, 180, 180]
 
     while pause:
-        global running, life_player
-        mouse_pos = pygame.mouse.get_pos()
+
 
         if(life_player > 0):
             # Rettangolo 1
@@ -248,6 +245,9 @@ def pausa_gioco():
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if posizioni_dimensioni1.collidepoint(mouse_pos):
+                        pausa_fine = pygame.time.get_ticks()
+                        tempo_paused += pausa_fine - pausa_inizio
+                        start_time += pausa_fine - pausa_inizio
                         pause = False
 
                     elif posizioni_dimensioni2.collidepoint(mouse_pos):
@@ -287,12 +287,10 @@ def pausa_gioco():
                     elif posizioni_dimensioni3.collidepoint(mouse_pos):
                         pause = False
                         running = False
-
-
-
-                    # Azione per rettangolo 3 qui
-
         pygame.display.update()
+    # prima della pausa
+
+
 
 def reset():
     global player_pos, life_player, proiettili, timer_proiettili, posizione_proiettile, zombie_pos, zombie_speed, bullets, start_time
